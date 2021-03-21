@@ -1,0 +1,41 @@
+version: '3.6'
+
+services:
+    php:
+        build:
+            context: ./docker
+            dockerfile: php.Dockerfile
+        container_name: dentiio-student-php
+        depends_on:
+            - database
+        volumes:
+            - './api:/var/www/html:cached'
+        networks:
+            - backend-network
+
+    nginx:
+        image: 'nginx:1.13.6'
+        container_name: dentiio-student-nginx
+        links:
+            - 'php'
+        volumes:
+            - './api:/var/www/html:cached'
+            - './config/nginx:/etc/nginx/conf.d:cached'
+        networks:
+            - frontend-network
+            - backend-network
+
+    database:
+        image: 'mariadb:10.5'
+        container_name: dentiio-student-database
+        restart: 'on-failure'
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+        networks:
+            - backend-network
+
+networks:
+    frontend-network:
+        driver: bridge
+    backend-network:
+        driver: bridge
